@@ -15,11 +15,11 @@ pixel_count = 0
 
 def laneAssist(img):
     # add threshold
-    img = cv.cvtColor(img, cv.COLOR_RGB2GRAY)
+    #img = cv.cvtColor(img, cv.COLOR_RGB2GRAY)
 
-    cv.imshow("gray", img)
-    cv.waitKey(0)
-    cv.destroyAllWindows()
+    #cv.imshow("gray", img)
+    #cv.waitKey(0)
+    #cv.destroyAllWindows()
 
     retur, img = cv.threshold(img, 150, 255, cv.THRESH_BINARY)
     
@@ -28,7 +28,9 @@ def laneAssist(img):
     cv.destroyAllWindows()
 
     # custom line detection
-
+    # we have to split loops in horizontally and vertically 
+    for pixel in range(0, len(img)):
+        print(img[pixel][0])
 
     return img
 
@@ -49,17 +51,17 @@ def GetSweetSpotPred(img1, img2):
 
 cut_region = (0,0,0,0)
 mainloop = True
-if roblox_found:
+if True:
     while mainloop:
         time.sleep(0.5)
 
         print('Roblox found')
         
         # Roblox Window Size for screen capture
-        roblox_RECT = win32gui.GetWindowRect(roblox_found)
+        #roblox_RECT = win32gui.GetWindowRect(roblox_found)
         
-        cut_region = roblox_RECT
-        screenie = pyautogui.screenshot(region=(cut_region))
+        #cut_region = roblox_RECT
+        screenie = pyautogui.screenshot()
         screenie = np.array(screenie)
         screenie = cv.cvtColor(screenie, cv.COLOR_BGR2RGB)
 

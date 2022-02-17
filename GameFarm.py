@@ -9,21 +9,33 @@ roblox_found = win32gui.FindWindow(0, "Roblox")
 
 tree_img = cv.imread("./tree.png")
 
-def Canny(img):
-    new_img = cv.Canny(img, 0, 200)
-    return new_img
-
 list_of_sweet_spots = []
 
 pixel_count = 0
+
+def laneAssist(img):
+    # add threshold
+    img = cv.cvtColor(img, cv.COLOR_RGB2GRAY)
+
+    cv.imshow("gray", img)
+    cv.waitKey(0)
+    cv.destroyAllWindows()
+
+    retur, img = cv.threshold(img, 150, 255, cv.THRESH_BINARY)
+    
+    cv.imshow("thresh", img)
+    cv.waitKey(0)
+    cv.destroyAllWindows()
+
+    # custom line detection
+
+
+    return img
+
 def LookForSweetSpot(img, color, colorDiff):
     for i in np.array(img):
         pixel_count += 1
-        if i[0] < color[0]+colorDiff and i[0] > color[0]-colorDiff and i[1] < color[1]+colorDiff and i[1] > color[1]-colorDiff and i[2] < color[2]+colorDiff and i[2] > color[2]-colorDiff:
-            # color is inside interval
-            print("Color is inside interval")
-            list_of_sweet_spots.append(pixel_count)
-    
+        
 def CutSweetSpot(img):
     global cut_region
     cut_region = list_of_sweet_spots[0]
@@ -51,7 +63,8 @@ if roblox_found:
         screenie = np.array(screenie)
         screenie = cv.cvtColor(screenie, cv.COLOR_BGR2RGB)
 
-        LookForSweetSpot(screenie, [255,0,0], 10)
+        #LookForSweetSpot(screenie, [255,0,0], 10)
+        screeie = laneAssist(screenie)
 
         cv.imshow("Screenshot", screenie)
         cv.waitKey(0)

@@ -4,6 +4,8 @@ import numpy as np
 from win32 import win32gui
 from win32api import GetSystemMetrics
 import time
+import math
+import keyboard
 
 # Roblox HWND
 roblox_found = win32gui.FindWindow(0, "Roblox")
@@ -15,20 +17,60 @@ list_of_sweet_spots = []
 pixel_count = 0
 
 def HoughLines(img):
+    global final_region
     img_copy = np.copy(img)
     img = cv.cvtColor(img, cv.COLOR_RGB2GRAY)
-    img = cv.Canny(img, 100, 200)
+    img = cv.adaptiveThreshold(img, 100, cv.ADAPTIVE_THRESH_GAUSSIAN_C, cv.THRESH_BINARY, 11, 2)
+    
+    #cv.imshow("thresh", img)
+    #cv.waitKey(0)
+    #cv.destroyAllWindows()
+    
+    img = cv.Canny(img, 10, 200)
 
-    lines = cv.HoughLinesP(img , 1, np.pi/180, 50, 5, 50, 10)
+    #cv.imshow("thresh", img)
+    #cv.waitKey(0)
+    #cv.destroyAllWindows()
 
-    x = 0
+    lines = cv.HoughLinesP(img , 1, np.pi/180, 50, 10, 10, 10)
+
     for i in range(0, len(lines)):
-        lx = lines[i][0]
-        cv.line(img_copy, (lx[0], lx[1]), (lx[2], lx[3]), (255, 0, 0), 2)
-        x += 1
+        # check if lines are 70+ degrees
+        ax,ay,bx,by = lines[i][0]
+    
+        degrees = 50
+        curr_deg = math.degrees(math.atan((ay-by)/(ax-bx)))
 
-    print(str(x)+" lines drawn")
-    return img_copy
+        if curr_deg >= degrees or curr_deg <= (-1*degrees):
+            cv.line(img_copy, (ax,ay), (bx,by), (255, 0, 0), 2)
+
+            # check distance from line to center screen
+            center_screenX = (((final_region[2]+final_region[0])/2)/2)
+            print("Center screen:"+str(center_screenX))
+            print("line ax: " +str(ax))
+            moving_distance = 100
+
+            print("distance from left:" + str(center_screenX - ax) + " distance from right:" + str(ax- center_screenX))
+
+            # check side of screen
+            if ax < center_screenX:
+                distance = center_screenX - ax
+                if distance < moving_distance:
+                    print("Pressing d")
+                    keyboard.press("d")
+                    time.sleep(.15)
+                    keyboard.release("d")
+
+            elif ax > center_screenX:
+                distance = ax - center_screenX
+                if distance < moving_distance:
+                    print("Pressing a")
+                    keyboard.press("a")
+                    time.sleep(.15)
+                    keyboard.release("a")
+
+    cv.imshow("Lines", img_copy)
+    cv.waitKey(100)
 
 def laneAssist(img):
     # add threshold
@@ -40,9 +82,9 @@ def laneAssist(img):
 
     retur, img = cv.threshold(img, 150, 255, cv.THRESH_BINARY)
     
-    cv.imshow("thresh", img)
-    cv.waitKey(0)
-    cv.destroyAllWindows()
+    #cv.imshow("thresh", img)
+    #cv.waitKey(0)
+    #cv.destroyAllWindows()
 
     # custom line detection
     # we have to split loops in horizontally and vertically 
@@ -67,28 +109,25 @@ def GetSweetSpotShape(img, img_shape):
 def GetSweetSpotPred(img1, img2):
     img_diff = 0
 
+
 cut_region = (0,0,0,0)
 mainloop = True
 if roblox_found:
     while mainloop:
         time.sleep(0.5)
 
-        print('Roblox found')
-        
         # Roblox Window Size for screen capture
         roblox_RECT = win32gui.GetWindowRect(roblox_found)
         
         cut_region = roblox_RECT
-        screenie = pyautogui.screenshot(region=(cut_region))
+        final_region = (cut_region[0]+200, cut_region[1]+210, cut_region[2]-570, cut_region[3]-600)
+        screenie = pyautogui.screenshot(region=(final_region))
         screenie = np.array(screenie)
         screenie = cv.cvtColor(screenie, cv.COLOR_BGR2RGB)
 
         #LookForSweetSpot(screenie, [255,0,0], 10)
         
-        screenie_mod = HoughLines(screenie)
+        HoughLines(screenie)
 
-        cv.imshow("Screenshot", screenie_mod)
-        cv.waitKey(0)
-        cv.destroyAllWindows()
 else:
     print('Roblox not found. Please open roblox then the software.')

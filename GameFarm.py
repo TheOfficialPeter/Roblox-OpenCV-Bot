@@ -2,6 +2,7 @@ import cv2 as cv
 import pyautogui 
 import numpy as np
 from win32 import win32gui
+from win32api import GetSystemMetrics
 import time
 
 # Roblox HWND
@@ -12,6 +13,22 @@ tree_img = cv.imread("./tree.png")
 list_of_sweet_spots = []
 
 pixel_count = 0
+
+def HoughLines(img):
+    img_copy = np.copy(img)
+    img = cv.cvtColor(img, cv.COLOR_RGB2GRAY)
+    img = cv.Canny(img, 100, 200)
+
+    lines = cv.HoughLinesP(img , 1, np.pi/180, 50, 5, 50, 10)
+
+    x = 0
+    for i in range(0, len(lines)):
+        lx = lines[i][0]
+        cv.line(img_copy, (lx[0], lx[1]), (lx[2], lx[3]), (255, 0, 0), 2)
+        x += 1
+
+    print(str(x)+" lines drawn")
+    return img_copy
 
 def laneAssist(img):
     # add threshold
@@ -29,8 +46,9 @@ def laneAssist(img):
 
     # custom line detection
     # we have to split loops in horizontally and vertically 
-    for pixel in range(0, len(img)):
-        print(img[pixel][0])
+    for py in range(0, 1):
+        for px in range(0, GetSystemMetrics(0)):
+            print(img[px, py])
 
     return img
 
@@ -51,24 +69,25 @@ def GetSweetSpotPred(img1, img2):
 
 cut_region = (0,0,0,0)
 mainloop = True
-if True:
+if roblox_found:
     while mainloop:
         time.sleep(0.5)
 
         print('Roblox found')
         
         # Roblox Window Size for screen capture
-        #roblox_RECT = win32gui.GetWindowRect(roblox_found)
+        roblox_RECT = win32gui.GetWindowRect(roblox_found)
         
-        #cut_region = roblox_RECT
-        screenie = pyautogui.screenshot()
+        cut_region = roblox_RECT
+        screenie = pyautogui.screenshot(region=(cut_region))
         screenie = np.array(screenie)
         screenie = cv.cvtColor(screenie, cv.COLOR_BGR2RGB)
 
         #LookForSweetSpot(screenie, [255,0,0], 10)
-        screeie = laneAssist(screenie)
+        
+        screenie_mod = HoughLines(screenie)
 
-        cv.imshow("Screenshot", screenie)
+        cv.imshow("Screenshot", screenie_mod)
         cv.waitKey(0)
         cv.destroyAllWindows()
 else:

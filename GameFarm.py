@@ -20,25 +20,25 @@ def HoughLines(img):
     global final_region
     img_copy = np.copy(img)
     img = cv.cvtColor(img, cv.COLOR_RGB2GRAY)
-    img = cv.adaptiveThreshold(img, 100, cv.ADAPTIVE_THRESH_GAUSSIAN_C, cv.THRESH_BINARY, 11, 2)
+    img = cv.adaptiveThreshold(img, 200, cv.ADAPTIVE_THRESH_GAUSSIAN_C, cv.THRESH_BINARY, 11, 2)
     
     #cv.imshow("thresh", img)
     #cv.waitKey(0)
     #cv.destroyAllWindows()
     
-    img = cv.Canny(img, 10, 200)
+    img = cv.Canny(img, 100, 200)
 
     #cv.imshow("thresh", img)
     #cv.waitKey(0)
     #cv.destroyAllWindows()
 
-    lines = cv.HoughLinesP(img , 1, np.pi/180, 50, 10, 10, 10)
+    lines = cv.HoughLinesP(img , 1, np.pi/180, 50, 10, 5, 10)
 
     for i in range(0, len(lines)):
         # check if lines are 70+ degrees
         ax,ay,bx,by = lines[i][0]
     
-        degrees = 50
+        degrees = 40
         curr_deg = math.degrees(math.atan((ay-by)/(ax-bx)))
 
         if curr_deg >= degrees or curr_deg <= (-1*degrees):
@@ -48,7 +48,7 @@ def HoughLines(img):
             center_screenX = (((final_region[2]+final_region[0])/2)/2)
             print("Center screen:"+str(center_screenX))
             print("line ax: " +str(ax))
-            moving_distance = 100
+            moving_distance = 200
 
             print("distance from left:" + str(center_screenX - ax) + " distance from right:" + str(ax- center_screenX))
 
@@ -109,6 +109,8 @@ def GetSweetSpotShape(img, img_shape):
 def GetSweetSpotPred(img1, img2):
     img_diff = 0
 
+def objectDetection(img):
+    pass
 
 cut_region = (0,0,0,0)
 mainloop = True
